@@ -42,6 +42,13 @@ def get_book_image_url(page_html):
     return urljoin(base_url, image_relative_url)
 
 
+def get_book_comments(page_html):
+    soup = BeautifulSoup(page_html, 'lxml')
+    comments_tags = soup.find_all('div', attrs={'class': 'texts'})
+    comments_texts = [tag.span.text for tag in comments_tags]
+    return comments_texts
+
+
 def download_txt(url, filename, folder='books'):
     text = download_text(url)
     safe_filename = sanitize_filename(filename)
@@ -91,10 +98,11 @@ def main():
 
         image_url = get_book_image_url(book_page_html)
         download_image(image_url, images_dir)
+        comments = get_book_comments(book_page_html)
+        print(comments)
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main()
-
 
