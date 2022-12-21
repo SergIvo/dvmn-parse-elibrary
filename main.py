@@ -2,15 +2,20 @@ import os
 
 import requests
 from bs4 import BeautifulSoup
+from pathvalidate import sanitize_filename
 
 
 def check_for_redirect(response):
     if response.history:
+        print(response.url, response.history)
         raise requests.HTTPError
 
 
-def download_text(url, params):
-    response = requests.get(url, params=params)
+def download_text(url, params=None):
+    if params:
+        response = requests.get(url, params=params)
+    else:
+        response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
     return response.text
@@ -33,6 +38,15 @@ def get_title_and_author(url):
     print(author, title)
 
 
+def download_txt(url, filename, folder='books'):
+    text = download_text(url)
+    safe_filename = sanitize_filename(filename)
+    filepath = os.path.join(folder, f'{safe_filename}.txt')
+    with open(filepath, 'w') as file:
+        file.write(text)
+    return filepath
+
+
 def main():
     books_dir = 'books'
     os.makedirs(books_dir, exist_ok=True)
@@ -51,5 +65,9 @@ def main():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    url = 'https://tululu.org/b1/'
-    get_title_and_author(url)
+    url = 'https://tululu.org/txt.php?id=1'
+    filepath = download_txt(url, 'Али/би', folder='books\\')
+    print(filepath)
+    filepath = download_txt(url, 'Али\\би', folder='txt\\')
+    print(filepath)
+
