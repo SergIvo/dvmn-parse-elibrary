@@ -49,6 +49,13 @@ def get_book_comments(page_html):
     return comments_texts
 
 
+def get_book_genre(page_html):
+    soup = BeautifulSoup(page_html, 'lxml')
+    genre_tags = soup.find('span', attrs={'class': 'd_book'}).find_all('a')
+    genres = [tag.text for tag in genre_tags]
+    return genres
+
+
 def download_txt(url, filename, folder='books'):
     text = download_text(url)
     safe_filename = sanitize_filename(filename)
@@ -91,15 +98,16 @@ def main():
 
         try:
             text_url = base_text_url.format(book_id)
-            download_txt(text_url, filename, books_dir)
+            #download_txt(text_url, filename, books_dir)
         except requests.HTTPError:
             print("Requested book doesn't exist.")
             continue
 
         image_url = get_book_image_url(book_page_html)
-        download_image(image_url, images_dir)
+        #download_image(image_url, images_dir)
         comments = get_book_comments(book_page_html)
-        print(comments)
+        genres = get_book_genre(book_page_html)
+        print(genres)
 
 
 # Press the green button in the gutter to run the script.
