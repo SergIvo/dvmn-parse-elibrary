@@ -25,35 +25,26 @@ def download_file(url):
     return response.content
 
 
-def get_title_and_author(page_html):
+def parse_book_page(page_html):
     soup = BeautifulSoup(page_html, 'lxml')
+    book_details = dict()
+
     author_and_title_tag = soup.find('div', attrs={'id': 'content'}).find('h1')
     title, _ = author_and_title_tag.text.split('::')
-    title = title.strip()
-    author = author_and_title_tag.a.text
-    return title, author
+    book_details['title'] = title.strip()
+    book_details['author'] = author_and_title_tag.a.text
 
-
-def get_book_image_url(page_html):
-    soup = BeautifulSoup(page_html, 'lxml')
     image_tag = soup.find('div', attrs={'class': 'bookimage'}).find('img')
     image_relative_url = image_tag['src']
     base_url = 'https://tululu.org/'
-    return urljoin(base_url, image_relative_url)
+    book_details['image_url'] = urljoin(base_url, image_relative_url)
 
-
-def get_book_comments(page_html):
-    soup = BeautifulSoup(page_html, 'lxml')
     comments_tags = soup.find_all('div', attrs={'class': 'texts'})
-    comments_texts = [tag.span.text for tag in comments_tags]
-    return comments_texts
+    book_details['comments'] = [tag.span.text for tag in comments_tags]
 
-
-def get_book_genre(page_html):
-    soup = BeautifulSoup(page_html, 'lxml')
     genre_tags = soup.find('span', attrs={'class': 'd_book'}).find_all('a')
-    genres = [tag.text for tag in genre_tags]
-    return genres
+    book_details['genres'] = [tag.text for tag in genre_tags]
+    return book_details
 
 
 def download_txt(url, filename, folder='books'):
@@ -93,8 +84,8 @@ def main():
             print("Requested book doesn't exist.")
             continue
 
-        title, _ = get_title_and_author(book_page_html)
-        filename = f'{book_id}. {title}'
+        book_details = parse_book_page(book_page_html)
+        filename = f"{book_id}. {book_details['title']}"
 
         try:
             text_url = base_text_url.format(book_id)
@@ -103,11 +94,8 @@ def main():
             print("Requested book doesn't exist.")
             continue
 
-        image_url = get_book_image_url(book_page_html)
-        #download_image(image_url, images_dir)
-        comments = get_book_comments(book_page_html)
-        genres = get_book_genre(book_page_html)
-        print(genres)
+        #download_image(book_details['image_url'], images_dir)
+        print(book_details)
 
 
 # Press the green button in the gutter to run the script.
