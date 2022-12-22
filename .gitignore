@@ -139,5 +139,6 @@ cython_debug/
 
 .idea/
 books/
+images/
 *.txt
 !requirements.txt
