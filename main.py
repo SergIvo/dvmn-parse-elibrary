@@ -12,17 +12,11 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def download_text(url):
+def get_text_from_url(url):
     response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
     return response.text
-
-
-def download_file(url):
-    response = requests.get(url)
-    response.raise_for_status()
-    return response.content
 
 
 def parse_book_page(page_html):
@@ -48,7 +42,7 @@ def parse_book_page(page_html):
 
 
 def download_txt(url, filename, folder='books'):
-    text = download_text(url)
+    text = get_text_from_url(url)
     safe_filename = sanitize_filename(filename)
     filepath = os.path.join(folder, f'{safe_filename}.txt')
     with open(filepath, 'w') as file:
@@ -57,7 +51,11 @@ def download_txt(url, filename, folder='books'):
 
 
 def download_image(url, folder='images'):
-    image = download_file(url)
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.content
+    image = response.content
+
     url_parts = urlsplit(url)
     filename = unquote(url_parts.path)
     safe_filename = sanitize_filename(filename)
@@ -76,10 +74,10 @@ def main(start_id, end_id):
 
     base_book_url = 'https://tululu.org/b{}/'
     base_text_url = 'https://tululu.org/txt.php?id={}'
-    for book_id in range(start_id, end_id):
+    for book_id in range(start_id, end_id + 1):
+        book_url = base_book_url.format(book_id)
         try:
-            book_url = base_book_url.format(book_id)
-            book_page_html = download_text(book_url)
+            book_page_html = get_text_from_url(book_url)
         except requests.HTTPError:
             print(f'Описание книги {book_id} не доступно.')
             continue
@@ -101,7 +99,7 @@ def main(start_id, end_id):
 if __name__ == '__main__':
     parser = ArgumentParser(description='Программа скачивает книги с сайта tululu.org в указанном интервале')
     parser.add_argument('-s', '--start_id', help='ID книги, с которой начнется скачивание', type=int, default=1)
-    parser.add_argument('-e', '--end_id', help='ID книги, на которой закончится скачивание', type=int, default=11)
+    parser.add_argument('-e', '--end_id', help='ID книги, на которой закончится скачивание', type=int, default=10)
     args = parser.parse_args()
 
     main(args.start_id, args.end_id)
