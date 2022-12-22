@@ -1,5 +1,6 @@
 import os
 from urllib.parse import urljoin, urlsplit, unquote
+from argparse import ArgumentParser
 
 import requests
 from bs4 import BeautifulSoup
@@ -8,7 +9,6 @@ from pathvalidate import sanitize_filename
 
 def check_for_redirect(response):
     if response.history:
-        print(response.url, response.history)
         raise requests.HTTPError
 
 
@@ -68,7 +68,7 @@ def download_image(url, folder='images'):
     return filepath
 
 
-def main():
+def main(start_id, end_id):
     books_dir = 'books'
     os.makedirs(books_dir, exist_ok=True)
     images_dir = 'images'
@@ -76,12 +76,12 @@ def main():
 
     base_book_url = 'https://tululu.org/b{}/'
     base_text_url = 'https://tululu.org/txt.php?id={}'
-    for book_id in range(1, 11):
+    for book_id in range(start_id, end_id):
         try:
             book_url = base_book_url.format(book_id)
             book_page_html = download_text(book_url)
         except requests.HTTPError:
-            print("Requested book doesn't exist.")
+            print(f'Описание книги {book_id} не доступно.')
             continue
 
         book_details = parse_book_page(book_page_html)
@@ -89,16 +89,19 @@ def main():
 
         try:
             text_url = base_text_url.format(book_id)
-            #download_txt(text_url, filename, books_dir)
+            download_txt(text_url, filename, books_dir)
         except requests.HTTPError:
-            print("Requested book doesn't exist.")
+            print(f'Текст книги {book_id} не доступен.')
             continue
 
-        #download_image(book_details['image_url'], images_dir)
-        print(book_details)
+        download_image(book_details['image_url'], images_dir)
+        print(f"Название: {book_details['title']} \nАвтор: {book_details['author']}")
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    main()
+    parser = ArgumentParser(description='Программа скачивает книги с сайта tululu.org в указанном интервале')
+    parser.add_argument('-s', '--start_id', help='ID книги, с которой начнется скачивание', type=int, default=1)
+    parser.add_argument('-e', '--end_id', help='ID книги, на которой закончится скачивание', type=int, default=11)
+    args = parser.parse_args()
 
+    main(args.start_id, args.end_id)
