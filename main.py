@@ -53,7 +53,7 @@ def download_txt(url, filename, folder='books'):
 def download_image(url, folder='images'):
     response = requests.get(url)
     response.raise_for_status()
-    return response.content
+    check_for_redirect()
     image = response.content
 
     url_parts = urlsplit(url)
@@ -92,7 +92,10 @@ def main(start_id, end_id):
             print(f'Текст книги {book_id} не доступен.')
             continue
 
-        download_image(book_details['image_url'], images_dir)
+        try:
+            download_image(book_details['image_url'], images_dir)
+        except requests.HTTPError:
+            print(f'Обложка книги {book_id} не доступна.')
         print(f"Название: {book_details['title']} \nАвтор: {book_details['author']}")
 
 
