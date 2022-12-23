@@ -24,7 +24,7 @@ def get_text_from_url(url, params=None):
                 response = requests.get(url)
         except requests.exceptions.ConnectionError:
             sleep(reconnect_delay)
-            reconnect_delay += 10
+            reconnect_delay = 10
 
     response.raise_for_status()
     check_for_redirect(response)
@@ -69,7 +69,7 @@ def download_image(url, folder='images'):
             response = requests.get(url)
         except requests.exceptions.ConnectionError:
             sleep(reconnect_delay)
-            reconnect_delay += 10
+            reconnect_delay = 10
 
     response.raise_for_status()
     check_for_redirect(response)
