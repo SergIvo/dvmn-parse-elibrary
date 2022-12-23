@@ -1,6 +1,7 @@
 import os
 from urllib.parse import urljoin, urlsplit, unquote
 from argparse import ArgumentParser
+from time import sleep
 
 import requests
 from bs4 import BeautifulSoup
@@ -13,10 +14,18 @@ def check_for_redirect(response):
 
 
 def get_text_from_url(url, params=None):
-    if params:
-        response = requests.get(url, params=params)
-    else:
-        response = requests.get(url)
+    response = None
+    reconnect_delay = 0
+    while not response:
+        try:
+            if params:
+                response = requests.get(url, params=params)
+            else:
+                response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            sleep(reconnect_delay)
+            reconnect_delay += 10
+
     response.raise_for_status()
     check_for_redirect(response)
     return response.text
@@ -53,7 +62,15 @@ def save_txt(text, filename, folder='books'):
 
 
 def download_image(url, folder='images'):
-    response = requests.get(url)
+    response = None
+    reconnect_delay = 0
+    while not response:
+        try:
+            response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            sleep(reconnect_delay)
+            reconnect_delay += 10
+
     response.raise_for_status()
     check_for_redirect(response)
     image = response.content
