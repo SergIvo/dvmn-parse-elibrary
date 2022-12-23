@@ -42,8 +42,7 @@ def parse_book_page(page_html):
 
     image_tag = soup.find('div', attrs={'class': 'bookimage'}).find('img')
     image_relative_url = image_tag['src']
-    base_url = 'https://tululu.org/'
-    book_details['image_url'] = urljoin(base_url, image_relative_url)
+    book_details['image_relative_url'] = image_relative_url
 
     comments_tags = soup.find_all('div', attrs={'class': 'texts'})
     book_details['comments'] = [tag.span.text for tag in comments_tags]
@@ -118,8 +117,10 @@ def main():
             print(f'Текст книги {book_id} не доступен.')
             continue
 
+        image_url = urljoin(book_url, book_details['image_relative_url'])
+        print(image_url)
         try:
-            download_image(book_details['image_url'], images_dir)
+            download_image(image_url, images_dir)
         except requests.HTTPError:
             print(f'Обложка книги {book_id} не доступна.')
         print(f"Название: {book_details['title']} \nАвтор: {book_details['author']}")
