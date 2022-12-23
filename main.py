@@ -12,8 +12,11 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def get_text_from_url(url):
-    response = requests.get(url)
+def get_text_from_url(url, params=None):
+    if params:
+        response = requests.get(url, params=params)
+    else:
+        response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
     return response.text
@@ -41,8 +44,7 @@ def parse_book_page(page_html):
     return book_details
 
 
-def download_txt(url, filename, folder='books'):
-    text = get_text_from_url(url)
+def save_txt(text, filename, folder='books'):
     safe_filename = sanitize_filename(filename)
     filepath = os.path.join(folder, f'{safe_filename}.txt')
     with open(filepath, 'w') as file:
@@ -53,7 +55,7 @@ def download_txt(url, filename, folder='books'):
 def download_image(url, folder='images'):
     response = requests.get(url)
     response.raise_for_status()
-    check_for_redirect()
+    check_for_redirect(response)
     image = response.content
 
     url_parts = urlsplit(url)
@@ -78,7 +80,7 @@ def main():
     os.makedirs(images_dir, exist_ok=True)
 
     base_book_url = 'https://tululu.org/b{}/'
-    base_text_url = 'https://tululu.org/txt.php?id={}'
+    base_text_url = 'https://tululu.org/txt.php'
 
     for book_id in range(args.start_id, args.end_id + 1):
         book_url = base_book_url.format(book_id)
@@ -91,9 +93,10 @@ def main():
         book_details = parse_book_page(book_page_html)
         filename = f"{book_id}. {book_details['title']}"
 
+        text_url_params = {'id': book_id}
         try:
-            text_url = base_text_url.format(book_id)
-            download_txt(text_url, filename, books_dir)
+            text = get_text_from_url(base_text_url, text_url_params)
+            save_txt(text, filename, books_dir)
         except requests.HTTPError:
             print(f'Текст книги {book_id} не доступен.')
             continue
