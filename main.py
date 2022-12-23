@@ -33,22 +33,26 @@ def get_text_from_url(url, params=None):
 
 def parse_book_page(page_html):
     soup = BeautifulSoup(page_html, 'lxml')
-    book_details = dict()
-
-    author_and_title_tag = soup.find('div', attrs={'id': 'content'}).find('h1')
-    title, _ = author_and_title_tag.text.split('::')
-    book_details['title'] = title.strip()
-    book_details['author'] = author_and_title_tag.a.text
 
     image_tag = soup.find('div', attrs={'class': 'bookimage'}).find('img')
     image_relative_url = image_tag['src']
-    book_details['image_relative_url'] = image_relative_url
 
     comments_tags = soup.find_all('div', attrs={'class': 'texts'})
-    book_details['comments'] = [tag.span.text for tag in comments_tags]
+    comments = [tag.span.text for tag in comments_tags]
 
     genre_tags = soup.find('span', attrs={'class': 'd_book'}).find_all('a')
-    book_details['genres'] = [tag.text for tag in genre_tags]
+    genres = [tag.text for tag in genre_tags]
+
+    author_and_title_tag = soup.find('div', attrs={'id': 'content'}).find('h1')
+    title, _ = author_and_title_tag.text.split('::')
+
+    book_details = {
+        'title': title.strip(),
+        'author': author_and_title_tag.a.text,
+        'image_relative_url': image_relative_url,
+        'comments': comments,
+        'genres': genres,
+    }
     return book_details
 
 
