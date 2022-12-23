@@ -66,7 +66,12 @@ def download_image(url, folder='images'):
     return filepath
 
 
-def main(start_id, end_id):
+def main():
+    parser = ArgumentParser(description='Программа скачивает книги с сайта tululu.org в указанном интервале')
+    parser.add_argument('-s', '--start_id', help='ID книги, с которой начнется скачивание', type=int, default=1)
+    parser.add_argument('-e', '--end_id', help='ID книги, на которой закончится скачивание', type=int, default=10)
+    args = parser.parse_args()
+
     books_dir = 'books'
     os.makedirs(books_dir, exist_ok=True)
     images_dir = 'images'
@@ -74,7 +79,8 @@ def main(start_id, end_id):
 
     base_book_url = 'https://tululu.org/b{}/'
     base_text_url = 'https://tululu.org/txt.php?id={}'
-    for book_id in range(start_id, end_id + 1):
+
+    for book_id in range(args.start_id, args.end_id + 1):
         book_url = base_book_url.format(book_id)
         try:
             book_page_html = get_text_from_url(book_url)
@@ -100,9 +106,4 @@ def main(start_id, end_id):
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser(description='Программа скачивает книги с сайта tululu.org в указанном интервале')
-    parser.add_argument('-s', '--start_id', help='ID книги, с которой начнется скачивание', type=int, default=1)
-    parser.add_argument('-e', '--end_id', help='ID книги, на которой закончится скачивание', type=int, default=10)
-    args = parser.parse_args()
-
-    main(args.start_id, args.end_id)
+    main()
