@@ -13,7 +13,7 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def get_text_from_url(url, params=None):
+def ensure_request(url, params=None):
     response = None
     reconnect_delay = 0
     while not response:
@@ -25,7 +25,7 @@ def get_text_from_url(url, params=None):
 
     response.raise_for_status()
     check_for_redirect(response)
-    return response.text
+    return response
 
 
 def parse_book_page(page_html):
@@ -62,17 +62,7 @@ def save_txt(text, filename, folder='books'):
 
 
 def download_image(url, folder='images'):
-    response = None
-    reconnect_delay = 0
-    while not response:
-        try:
-            response = requests.get(url)
-        except requests.exceptions.ConnectionError:
-            sleep(reconnect_delay)
-            reconnect_delay = 10
-
-    response.raise_for_status()
-    check_for_redirect(response)
+    response = ensure_request(url)
     image = response.content
 
     url_parts = urlsplit(url)
@@ -102,18 +92,18 @@ def main():
     for book_id in range(args.start_id, args.end_id + 1):
         book_url = base_book_url.format(book_id)
         try:
-            book_page_html = get_text_from_url(book_url)
+            book_page_response = ensure_request(book_url)
         except requests.HTTPError:
             print(f'Описание книги {book_id} не доступно.')
             continue
 
-        book_details = parse_book_page(book_page_html)
+        book_details = parse_book_page(book_page_response.text)
         filename = f"{book_id}. {book_details['title']}"
 
         text_url_params = {'id': book_id}
         try:
-            text = get_text_from_url(base_text_url, text_url_params)
-            save_txt(text, filename, books_dir)
+            text_response = ensure_request(base_text_url, text_url_params)
+            save_txt(text_response.text, filename, books_dir)
         except requests.HTTPError:
             print(f'Текст книги {book_id} не доступен.')
             continue
