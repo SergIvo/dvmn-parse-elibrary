@@ -119,7 +119,6 @@ def main():
             continue
 
         image_url = urljoin(book_url, book_details['image_relative_url'])
-        print(image_url)
         try:
             download_image(image_url, images_dir)
         except requests.HTTPError:
