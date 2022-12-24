@@ -18,10 +18,7 @@ def get_text_from_url(url, params=None):
     reconnect_delay = 0
     while not response:
         try:
-            if params:
-                response = requests.get(url, params=params)
-            else:
-                response = requests.get(url)
+            response = requests.get(url, params=params)
         except requests.exceptions.ConnectionError:
             sleep(reconnect_delay)
             reconnect_delay = 10
