@@ -32,11 +32,11 @@ def parse_urls_from_page(page_url):
     response = ensure_request(page_url)
 
     soup = BeautifulSoup(response.text, 'lxml')
-    book_tags = soup.find_all('table', attrs={'class': 'd_book'})
-
+    book_tags = soup.select('.d_book')
     book_urls = []
+
     for tag in book_tags:
-        relative_book_url = tag.find('a')['href']
+        relative_book_url = tag.select_one('a')['href']
         book_url = urljoin(page_url, relative_book_url)
         book_urls.append(book_url)
 
@@ -54,16 +54,16 @@ def save_txt(text, filename, folder='books'):
 def parse_book_page(page_html):
     soup = BeautifulSoup(page_html, 'lxml')
 
-    image_tag = soup.find('div', attrs={'class': 'bookimage'}).find('img')
+    image_tag = soup.select_one('.bookimage img')
     image_relative_url = image_tag['src']
 
-    comments_tags = soup.find_all('div', attrs={'class': 'texts'})
+    comments_tags = soup.select('.texts')
     comments = [tag.span.text for tag in comments_tags]
 
-    genre_tags = soup.find('span', attrs={'class': 'd_book'}).find_all('a')
+    genre_tags = soup.select('span.d_book a')
     genres = [tag.text for tag in genre_tags]
 
-    author_and_title_tag = soup.find('div', attrs={'id': 'content'}).find('h1')
+    author_and_title_tag = soup.select_one("div[id='content'] h1")
     title, _ = author_and_title_tag.text.split('::')
 
     text_url_selector = ".d_book a[title*='скачать книгу txt']"
@@ -71,7 +71,7 @@ def parse_book_page(page_html):
     if text_url_tag:
         text_relative_url = text_url_tag['href']
     else:
-        text_relative_url = ''
+        text_relative_url = None
 
     book_details = {
         'title': title.strip(),
@@ -107,7 +107,7 @@ def main():
     base_url = 'https://tululu.org/l55/{}/'
 
     book_urls = []
-    for page_number in range(1, 5):
+    for page_number in range(1, 2):
         page_url = base_url.format(page_number)
         url_from_page = parse_urls_from_page(page_url)
         book_urls.extend(url_from_page)
