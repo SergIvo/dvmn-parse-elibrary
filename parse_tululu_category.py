@@ -2,6 +2,7 @@ import os
 import json
 from urllib.parse import urljoin, urlsplit, unquote
 from time import sleep
+from argparse import ArgumentParser
 
 import requests
 from bs4 import BeautifulSoup
@@ -40,6 +41,27 @@ def parse_urls_from_page(page_url):
         book_url = urljoin(page_url, relative_book_url)
         book_urls.append(book_url)
 
+    return book_urls
+
+
+def parse_all_book_urls(start_page, end_page):
+    base_url = 'https://tululu.org/l55/{}/'
+    book_urls = []
+    if end_page:
+        for page_number in range(start_page, end_page):
+            page_url = base_url.format(page_number)
+            url_from_page = parse_urls_from_page(page_url)
+            book_urls.extend(url_from_page)
+    else:
+        page_number = start_page
+        while True:
+            page_url = base_url.format(page_number)
+            try:
+                url_from_page = parse_urls_from_page(page_url)
+            except requests.HTTPError:
+                break
+            book_urls.extend(url_from_page)
+            page_number += 1
     return book_urls
 
 
@@ -99,18 +121,27 @@ def download_image(url, folder='images'):
 
 
 def main():
+    parser = ArgumentParser(description='Программа скачивает книги с сайта tululu.org из раздела "Научная фантастика"')
+    parser.add_argument(
+        '--start_page',
+        help='Номер страницы, с которой начнется скачивание',
+        type=int,
+        default=1
+    )
+    parser.add_argument(
+        '--end_page',
+        help='Номер страницы, на которой закончится скачивание',
+        type=int,
+        default=None
+    )
+    args = parser.parse_args()
+
     books_dir = 'books'
     os.makedirs(books_dir, exist_ok=True)
     images_dir = 'images'
     os.makedirs(images_dir, exist_ok=True)
 
-    base_url = 'https://tululu.org/l55/{}/'
-
-    book_urls = []
-    for page_number in range(1, 2):
-        page_url = base_url.format(page_number)
-        url_from_page = parse_urls_from_page(page_url)
-        book_urls.extend(url_from_page)
+    book_urls = parse_all_book_urls(args.start_page, args.end_page)
 
     books_json = []
     for i, book_url in enumerate(book_urls):
