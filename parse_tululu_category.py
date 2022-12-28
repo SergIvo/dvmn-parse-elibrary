@@ -1,4 +1,5 @@
 import os
+import json
 from urllib.parse import urljoin, urlsplit, unquote
 from time import sleep
 
@@ -37,8 +38,6 @@ def parse_urls_from_page(page_url):
     for tag in book_tags:
         relative_book_url = tag.find('a')['href']
         book_url = urljoin(page_url, relative_book_url)
-        print(book_url)
-
         book_urls.append(book_url)
 
     return book_urls
@@ -111,10 +110,41 @@ def main():
     for page_number in range(1, 5):
         page_url = base_url.format(page_number)
         url_from_page = parse_urls_from_page(page_url)
-
         book_urls.extend(url_from_page)
 
-    print(len(book_urls))
+    books_json = []
+    for i, book_url in enumerate(book_urls):
+        try:
+            book_page_response = ensure_request(book_url)
+        except requests.HTTPError:
+            print(f'Описание книги по ссылке {book_url} не доступно.')
+            continue
+
+        book_details = parse_book_page(book_page_response.text)
+
+        if not book_details['text_relative_url']:
+            print(f'Текст книги по ссылке {book_url} не доступен.')
+            continue
+
+        text_url = urljoin(book_url, book_details['text_relative_url'])
+        filename = f"{i}. {book_details['title']}"
+        try:
+            text_response = ensure_request(text_url)
+            save_txt(text_response.text, filename, books_dir)
+        except requests.HTTPError:
+            print(f'Текст книги по ссылке {book_url} не доступен.')
+            continue
+
+        image_url = urljoin(book_url, book_details['image_relative_url'])
+        try:
+            download_image(image_url, images_dir)
+        except requests.HTTPError:
+            print(f'Обложка книги по ссылке {book_url} не доступна.')
+
+        books_json.append(book_details)
+
+    with open('books.json', 'w') as json_file:
+        json.dump(books_json, json_file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
