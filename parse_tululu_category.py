@@ -52,6 +52,39 @@ def save_txt(text, filename, folder='books'):
     return filepath
 
 
+def parse_book_page(page_html):
+    soup = BeautifulSoup(page_html, 'lxml')
+
+    image_tag = soup.find('div', attrs={'class': 'bookimage'}).find('img')
+    image_relative_url = image_tag['src']
+
+    comments_tags = soup.find_all('div', attrs={'class': 'texts'})
+    comments = [tag.span.text for tag in comments_tags]
+
+    genre_tags = soup.find('span', attrs={'class': 'd_book'}).find_all('a')
+    genres = [tag.text for tag in genre_tags]
+
+    author_and_title_tag = soup.find('div', attrs={'id': 'content'}).find('h1')
+    title, _ = author_and_title_tag.text.split('::')
+
+    text_url_selector = ".d_book a[title*='скачать книгу txt']"
+    text_url_tag = soup.select_one(text_url_selector)
+    if text_url_tag:
+        text_relative_url = text_url_tag['href']
+    else:
+        text_relative_url = ''
+
+    book_details = {
+        'title': title.strip(),
+        'author': author_and_title_tag.a.text,
+        'image_relative_url': image_relative_url,
+        'comments': comments,
+        'genres': genres,
+        'text_relative_url': text_relative_url
+    }
+    return book_details
+
+
 def download_image(url, folder='images'):
     response = ensure_request(url)
     image = response.content
