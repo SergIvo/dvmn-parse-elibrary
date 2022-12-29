@@ -120,7 +120,7 @@ def download_image(url, folder='images'):
     return filepath
 
 
-def main():
+def get_command_line_args():
     parser = ArgumentParser(
         description='Программа скачивает книги с сайта tululu.org из раздела "Научная фантастика"'
     )
@@ -161,6 +161,11 @@ def main():
         default=''
     )
     args = parser.parse_args()
+    return args
+
+
+def main():
+    args = get_command_line_args()
 
     book_urls = parse_all_book_urls(args.start_page, args.end_page)
 
