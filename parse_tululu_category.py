@@ -167,7 +167,7 @@ def main():
 
     book_urls = parse_all_book_urls(args.start_page, args.end_page)
 
-    books_json = []
+    books_details = []
     for i, book_url in enumerate(book_urls):
         try:
             book_page_response = ensure_request(book_url)
@@ -204,7 +204,7 @@ def main():
             except requests.HTTPError:
                 print(f'Обложка книги по ссылке {book_url} не доступна.')
 
-        books_json.append(book_details)
+        books_details.append(book_details)
 
     if args.json_path:
         os.makedirs(args.json_path, exist_ok=True)
@@ -212,7 +212,7 @@ def main():
     else:
         book_json_path = os.path.join(args.dest_folder, 'books.json')
     with open(book_json_path, 'w') as json_file:
-        json.dump(books_json, json_file, ensure_ascii=False, indent=4)
+        json.dump(books_details, json_file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
