@@ -120,25 +120,6 @@ def download_image(url, folder='images'):
     return filepath
 
 
-def join_overlapping(base_path, relative_path):
-    if not base_path:
-        return relative_path
-    elif not relative_path:
-        return base_path
-    base_path_dirs = base_path.split(os.sep)
-    relative_path_dirs = relative_path.split(os.sep)
-    popped = False
-    for directory in base_path_dirs:
-        if directory == relative_path_dirs[0]:
-            relative_path_dirs.pop(0)
-            popped = True
-        elif popped:
-            break
-    base_path_dirs.extend(relative_path_dirs)
-
-    return os.sep.join(base_path_dirs)
-
-
 def main():
     parser = ArgumentParser(
         description='Программа скачивает книги с сайта tululu.org из раздела "Научная фантастика"'
@@ -222,9 +203,12 @@ def main():
 
         books_json.append(book_details)
 
-    book_json_path = join_overlapping(args.dest_folder, args.json_path)
-    os.makedirs(book_json_path, exist_ok=True)
-    with open(os.path.join(book_json_path, 'books.json'), 'w') as json_file:
+    if args.json_path:
+        os.makedirs(args.json_path, exist_ok=True)
+        book_json_path = os.path.join(args.json_path, 'books.json')
+    else:
+        book_json_path = os.path.join(args.dest_folder, 'books.json')
+    with open(book_json_path, 'w') as json_file:
         json.dump(books_json, json_file, ensure_ascii=False, indent=4)
 
 
