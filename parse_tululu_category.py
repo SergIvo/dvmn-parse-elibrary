@@ -145,14 +145,12 @@ def get_command_line_args():
     parser.add_argument(
         '--skip_imgs',
         help='Пропустить скачивание обложек книг',
-        type=bool,
-        default=False
+        action='store_true'
     )
     parser.add_argument(
         '--skip_txt',
         help='Пропустить скачивание текстов книг',
-        type=bool,
-        default=False
+        action='store_true'
     )
     parser.add_argument(
         '--json_path',
