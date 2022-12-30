@@ -181,7 +181,7 @@ def main():
         book_details = parse_book_page(book_page_response.text)
 
         if not book_details['text_relative_url']:
-            print(f'Текст книги по ссылке {book_url} не доступен.')
+            print(f'Текст книги по ссылке {book_url} не доступен: нет ссылки для скачивания')
             continue
 
         if not args.skip_txt:
