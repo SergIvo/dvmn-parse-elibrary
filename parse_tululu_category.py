@@ -171,7 +171,7 @@ def main():
     book_urls = parse_all_book_urls(args.start_page, args.end_page)
 
     books_details = []
-    for i, book_url in enumerate(book_urls):
+    for book_number, book_url in enumerate(book_urls):
         try:
             book_page_response = ensure_request(book_url)
         except requests.HTTPError:
@@ -189,7 +189,7 @@ def main():
             os.makedirs(books_dir, exist_ok=True)
 
             text_url = urljoin(book_url, book_details['text_relative_url'])
-            filename = f"{i}. {book_details['title']}"
+            filename = f"{book_number}. {book_details['title']}"
             try:
                 text_response = ensure_request(text_url)
                 save_txt(text_response.text, filename, books_dir)
