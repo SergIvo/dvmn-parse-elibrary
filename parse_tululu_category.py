@@ -44,24 +44,28 @@ def parse_urls_from_page(page_url):
     return book_urls
 
 
+def parse_last_page_number(html):
+    soup = BeautifulSoup(html, 'lxml')
+    pagination_tags = soup.select("[class*='npage']")
+    last_page = pagination_tags[-1].text
+    return int(last_page)
+
+
 def parse_all_book_urls(start_page, end_page):
     base_url = 'https://tululu.org/l55/{}/'
     book_urls = []
-    if end_page:
-        for page_number in range(start_page, end_page):
-            page_url = base_url.format(page_number)
+    if not end_page:
+        response = ensure_request(base_url.format(1))
+        end_page = parse_last_page_number(response.text) + 1
+
+    for page_number in range(start_page, end_page):
+        page_url = base_url.format(page_number)
+        try:
             url_from_page = parse_urls_from_page(page_url)
-            book_urls.extend(url_from_page)
-    else:
-        page_number = start_page
-        while True:
-            page_url = base_url.format(page_number)
-            try:
-                url_from_page = parse_urls_from_page(page_url)
-            except requests.HTTPError:
-                break
-            book_urls.extend(url_from_page)
-            page_number += 1
+        except requests.HTTPError:
+            continue
+        book_urls.extend(url_from_page)
+
     return book_urls
 
 
