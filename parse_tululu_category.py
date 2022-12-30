@@ -209,8 +209,11 @@ def main():
     if args.json_path:
         os.makedirs(args.json_path, exist_ok=True)
         book_json_path = os.path.join(args.json_path, 'books.json')
-    else:
+    elif args.dest_folder:
+        os.makedirs(args.dest_folder, exist_ok=True)
         book_json_path = os.path.join(args.dest_folder, 'books.json')
+    else:
+        book_json_path = 'books.json'
     with open(book_json_path, 'w') as json_file:
         json.dump(books_details, json_file, ensure_ascii=False, indent=4)
 
