@@ -29,10 +29,8 @@ def ensure_request(url, params=None):
     return response
 
 
-def parse_urls_from_page(page_url):
-    response = ensure_request(page_url)
-
-    soup = BeautifulSoup(response.text, 'lxml')
+def parse_urls_from_page(html, page_url):
+    soup = BeautifulSoup(html, 'lxml')
     book_tags = soup.select('.d_book')
     book_urls = []
 
@@ -61,9 +59,10 @@ def parse_all_book_urls(start_page, end_page):
     for page_number in range(start_page, end_page):
         page_url = base_url.format(page_number)
         try:
-            url_from_page = parse_urls_from_page(page_url)
+            response = ensure_request(page_url)
         except requests.HTTPError:
             continue
+        url_from_page = parse_urls_from_page(response.text, page_url)
         book_urls.extend(url_from_page)
 
     return book_urls
