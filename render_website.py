@@ -1,9 +1,9 @@
 import json
 import os
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server
+from more_itertools import chunked
 
 
 def on_reload():
@@ -21,8 +21,10 @@ def on_reload():
         image_path = os.path.join(media_directory, 'images', image_real_name)
         book['image_relative_url'] = image_path
 
+    book_cards = list(chunked(books_details, 2))
+
     template = env.get_template('template.html')
-    rendered_page = template.render(book_cards=books_details)
+    rendered_page = template.render(book_cards=book_cards)
 
     with open('index.html', 'w', encoding="utf8") as file:
         file.write(rendered_page)
