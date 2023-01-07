@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import quote
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server
@@ -19,7 +20,11 @@ def on_reload():
     for book in books_details:
         image_real_name = ''.join(book['image_relative_url'].split('/'))
         image_path = os.path.join(media_directory, 'images', image_real_name)
-        book['image_relative_url'] = image_path
+        book['image_relative_url'] = quote(image_path)
+
+        text_real_name = f"{books_details.index(book)}. {book['title']}.txt"
+        text_path = os.path.join(media_directory, 'books', text_real_name)
+        book['text_relative_url'] = quote(text_path)
 
     book_cards = list(chunked(books_details, 2))
 
