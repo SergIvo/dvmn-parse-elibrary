@@ -7,9 +7,9 @@ from livereload import Server
 from more_itertools import chunked
 
 
-def render_template(env, cards, output_file_path):
+def render_template(env, page_content, output_file_path):
     template = env.get_template('template.html')
-    rendered_page = template.render(book_cards=cards)
+    rendered_page = template.render(**page_content)
 
     with open(output_file_path, 'w', encoding="utf8") as file:
         file.write(rendered_page)
@@ -45,9 +45,15 @@ def on_reload():
     paginated_book_cards = list(chunked(book_cards, 20))
 
     page_base_path = 'pages/index{}.html'
-    for page_number, one_page_cards in enumerate(paginated_book_cards):
+    pages_count = len(paginated_book_cards)
+    for page_number, one_page_cards in enumerate(paginated_book_cards, start=1):
         book_card_pairs = list(chunked(one_page_cards, 2))
-        render_template(env, book_card_pairs, page_base_path.format(page_number + 1))
+        page_content = {
+            'book_cards': book_card_pairs,
+            'pages_count': pages_count,
+            'current_page': page_number
+        }
+        render_template(env, page_content, page_base_path.format(page_number))
 
 
 if __name__ == '__main__':
