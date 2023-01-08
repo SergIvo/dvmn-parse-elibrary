@@ -11,7 +11,7 @@
     <title>Hello, world!</title>
   </head>
   <body>
-    <div class="container">
+    <div class="container pt-4">
       <nav aria-label="Page navigation">
         <ul class="pagination">
           {% if current_page == 1 %}
@@ -48,8 +48,12 @@
                     <div class="card-body">
                       <h5 class="card-title">{{ book.title }}</h5>
                       <p class="card-text">{{ book.author }}</p>
-                      <a href="{{ book.text_relative_url }}" target="_blank">Читать</a>
-                      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                      <p class="card-text"><a href="{{ book.text_relative_url }}" target="_blank">Читать</a></p>
+                      <p class="card-text">
+                        {% for genre in book.genres %}
+                          <span class="badge badge-light">{{ genre }}</span>
+                        {% endfor %}
+                      </p>
                     </div>
                   </div>
                 </div>
