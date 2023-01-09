@@ -42,14 +42,16 @@ def on_reload():
 
     media_directory = 'media'
     book_cards = process_book_cards(media_directory)
-    paginated_book_cards = list(chunked(book_cards, 20))
+    books_on_page = 20
+    paginated_book_cards = list(chunked(book_cards, books_on_page))
 
     page_base_path = 'pages/index{}.html'
     pages_count = len(paginated_book_cards)
     for page_number, one_page_cards in enumerate(paginated_book_cards, start=1):
-        book_card_pairs = list(chunked(one_page_cards, 2))
+        cards_in_row = 2
+        book_card_rows = list(chunked(one_page_cards, cards_in_row))
         page_content = {
-            'book_cards': book_card_pairs,
+            'book_cards': book_card_rows,
             'pages_count': pages_count,
             'current_page': page_number
         }
