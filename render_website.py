@@ -11,7 +11,7 @@ def render_template(env, page_content, output_file_path):
     template = env.get_template('template.html')
     rendered_page = template.render(**page_content)
 
-    with open(output_file_path, 'w', encoding="utf8") as file:
+    with open(output_file_path, 'w', encoding='utf8') as file:
         file.write(rendered_page)
 
 
@@ -25,7 +25,7 @@ def process_book_cards(media_directory):
         image_path = os.path.join(relative_media_dir, 'images', image_real_name)
         book['image_relative_url'] = quote(image_path)
 
-        text_real_name = f"{books_details.index(book)}. {book['title']}.txt"
+        text_real_name = f'{books_details.index(book)}. {book["title"]}.txt'
         text_path = os.path.join(relative_media_dir, 'books', text_real_name)
         book['text_relative_url'] = quote(text_path)
 
